@@ -73,6 +73,10 @@ typedef struct {
     glEnableVertexAttribArray(GLKVertexAttribTexCoord0);
     
     long offset = (long)&_quad;    //迷之C！
+    /*“I want to send some position values. I’m going to send 2 floats over.
+     After you read the first two floats,
+     advance the size of the TexturedVertex structure to find the next two.
+     And here’s a pointer to where you can find the first vertex.”*/
     glVertexAttribPointer(GLKVertexAttribPosition, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedVertex), (void *)(offset + offsetof(TexturedVertex, geometryVertex)));
     glVertexAttribPointer(GLKVertexAttribTexCoord0, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedVertex), (void *)(offset + offsetof(TexturedVertex, textureVertex)));
     
