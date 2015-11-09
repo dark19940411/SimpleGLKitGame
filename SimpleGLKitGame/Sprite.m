@@ -34,12 +34,12 @@ typedef struct {
     if (self = [super init]) {
         _effect = effect;
         
-        NSDictionary *options = [NSDictionary dictionaryWithObjectsAndKeys:
-                                [NSNumber numberWithBool:YES],
-                                GLKTextureLoaderOriginBottomLeft,
-                                nil];
+        NSDictionary * options = [NSDictionary dictionaryWithObjectsAndKeys:
+                                  [NSNumber numberWithBool:YES],
+                                  GLKTextureLoaderOriginBottomLeft,
+                                  nil];
         
-        NSError *error;
+        NSError * error;
         NSString *path = [[NSBundle mainBundle] pathForResource:fileName ofType:nil];
         
         _textureInfo = [GLKTextureLoader textureWithContentsOfFile:path options:options error:&error];
@@ -47,6 +47,9 @@ typedef struct {
             NSLog(@"Error loading file: %@", [error localizedDescription]);
             return nil;
         }
+        
+        _contentSize = CGSizeMake(_textureInfo.width, _textureInfo.height);
+        
         // Set up Textured Quad...
         TexturedQuad newQuad;
         newQuad.bl.geometryVertex = CGPointMake(0, 0);
@@ -63,10 +66,18 @@ typedef struct {
     return self;
 }
 
+- (GLKMatrix4)modelMatrix {
+    GLKMatrix4 modelMatrix = GLKMatrix4Identity;
+    modelMatrix = GLKMatrix4Translate(modelMatrix, _position.x, _position.y, 0);
+    modelMatrix = GLKMatrix4Translate(modelMatrix, -_contentSize.width / 2, -_contentSize.height / 2, 0);
+    return modelMatrix;
+}
+
 - (void)render {
-    _effect.texture2d0.name = _textureInfo.name;
+    _effect.texture2d0.name = self.textureInfo.name;
     _effect.texture2d0.enabled = YES;
     
+    _effect.transform.modelviewMatrix = [self modelMatrix];
     [_effect prepareToDraw];
     
     glEnableVertexAttribArray(GLKVertexAttribPosition);
@@ -77,10 +88,15 @@ typedef struct {
      After you read the first two floats,
      advance the size of the TexturedVertex structure to find the next two.
      And here’s a pointer to where you can find the first vertex.”*/
-    glVertexAttribPointer(GLKVertexAttribPosition, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedVertex), (void *)(offset + offsetof(TexturedVertex, geometryVertex)));
-    glVertexAttribPointer(GLKVertexAttribTexCoord0, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedVertex), (void *)(offset + offsetof(TexturedVertex, textureVertex)));
+    glVertexAttribPointer(GLKVertexAttribPosition, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedVertex), (void *) (offset + offsetof(TexturedVertex, geometryVertex)));
+    glVertexAttribPointer(GLKVertexAttribTexCoord0, 2, GL_FLOAT, GL_FALSE, sizeof(TexturedVertex), (void *) (offset + offsetof(TexturedVertex, textureVertex)));
     
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+}
+
+- (void)update:(float)dt {
+    GLKVector2 curMove = GLKVector2MultiplyScalar(_moveVelocity, dt);
+    _position = GLKVector2Add(_position, curMove);
 }
 
 @end
