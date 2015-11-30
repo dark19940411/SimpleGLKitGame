@@ -13,6 +13,7 @@
 @property(strong) GLKBaseEffect *effect;
 @property(strong) Sprite *player;
 @property(strong) NSMutableArray *children;
+@property(assign) float timeSinceLastSpawn;
 @end
 
 @implementation MainViewController
@@ -40,7 +41,7 @@
     
     _children = [NSMutableArray array];
     [_children addObject:_player];
-    _player.moveVelocity = GLKVector2Make(50, 50);
+//    _player.moveVelocity = GLKVector2Make(50, 50);
 }
 
 #pragma mark - GLKViewDelegate
@@ -56,7 +57,31 @@
     }
 }
 
+- (void)addTarget {
+    Sprite *target = [[Sprite alloc] initWithFile:@"Target.png" effect:_effect];
+    [_children addObject:target];
+    
+    int minY = target.contentSize.height / 2;
+    int maxY = 320 - target.contentSize.height / 2;
+    int rangeY = maxY - minY;
+    int actualY = (arc4random() % rangeY) + minY;
+    
+    target.position = GLKVector2Make(480, actualY);
+    
+    int minVelocity = 480.0 / 4.0;
+    int maxVelocity = 480.0 / 2.0;
+    int rangeVelocity = maxVelocity - minVelocity;
+    int actualVelocity = (arc4random() % rangeVelocity) + minVelocity;
+    
+    target.moveVelocity = GLKVector2Make(-actualVelocity, 0);
+}
+
 - (void)update{
+    _timeSinceLastSpawn += self.timeSinceLastUpdate;
+    if (_timeSinceLastSpawn > 1.0) {
+        _timeSinceLastSpawn = 0;
+        [self addTarget];
+    }
     for (Sprite *sprite in _children) {
         [sprite update:self.timeSinceLastUpdate];
     }
