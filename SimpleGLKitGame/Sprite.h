@@ -18,5 +18,6 @@
 - (id)initWithFile:(NSString *) fileName effect:(GLKBaseEffect *)effect;
 - (void)render;
 - (void)update:(float)dt;
+- (CGRect)boundingBox;
 
 @end

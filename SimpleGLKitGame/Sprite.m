@@ -99,4 +99,9 @@ typedef struct {
     _position = GLKVector2Add(_position, curMove);
 }
 
+- (CGRect)boundingBox {
+    CGRect rect = CGRectMake(_position.x, _position.y, _contentSize.width, _contentSize.height);
+    return rect;
+}
+
 @end
